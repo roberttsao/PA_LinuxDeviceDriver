@@ -17,10 +17,21 @@
 
 #define CDATA_MAJOR 121
 
+struct cdata_t{
+	char buf*;
+	int index;
+};
 static int cdata_open(struct inode *inode, struct file *filp)
 {
-	printk(KERN_ALERT "cdata in open: filp = %p\n", filp);
-
+	//printk(KERN_ALERT "cdata in open: filp = %p\n", filp);
+	ctruct cdata_t *cdata;
+	cdata = (struct cdata_t *)kmalloc(sizeof(struct cdata_t), GFP_KERNEL);
+	cdata->buf = (char *)kmalloc(64, GFP_KERNEL);
+	
+	flip->private_data = (cdata_t *)cdata;
+	
+	
+	
 	return 0;
 }
 
@@ -42,6 +53,8 @@ static struct file_operations cdata_fops = {
 	open:		cdata_open,
     release:    cdata_close,
     ioctl:      cdata_ioctl,
+    read:		cdata_read,
+    write:		cdata_write,
     
 };
 
