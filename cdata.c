@@ -20,13 +20,23 @@
 struct cdata_t{
 	char buf*;
 	int index;
+	wait_queue_head_t wq;	//every process need its own wai queue
 };
+
+void flush_buffer()
+{
+	
+}
 static int cdata_open(struct inode *inode, struct file *filp)
 {
 	//printk(KERN_ALERT "cdata in open: filp = %p\n", filp);
 	ctruct cdata_t *cdata;
 	cdata = (struct cdata_t *)kmalloc(sizeof(struct cdata_t), GFP_KERNEL);
 	cdata->buf = (char *)kmalloc(64, GFP_KERNEL);
+	cdata->index = 0;
+	
+	init_timer();
+	init_waitqueue_head(&cdata->wq);
 	
 	flip->private_data = (cdata_t *)cdata;
 	
@@ -35,6 +45,33 @@ static int cdata_open(struct inode *inode, struct file *filp)
 	return 0;
 }
 
+static ssize_t cdata_write(struct file *flip, const char *buf,
+	size_t size, loff_t *off)
+{
+	struct cdata_t *cdata = (struct cdata_t *)flip->private_data;
+	int i;
+	
+	for(i = 0; i < size; i++)
+	{
+		copy_from_user(&cdata->buf[cdata->index, &buf[i], 1]);
+		cdata_index++;
+		
+		if(cdata->index >= 64)
+			//return -1;
+			interruptible_sleep_on(&cdata->wq);
+			//ok, buffer is empty
+			//
+	}
+	return 0;
+}
+
+static ssize_t cdata_read(struct file *flip, const char *buf,
+	size_t size, loff_t *off)
+{
+	
+	return 0;
+}
+ 
 static int cdata_close(struct inode *inode, struct file *filp)
 {
 	printk(KERN_ALERT "cdata in close");
