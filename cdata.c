@@ -42,6 +42,7 @@ static struct file_operations cdata_fops = {
 	open:		cdata_open,
     release:    cdata_close,
     ioctl:      cdata_ioctl,
+    
 };
 
 int cdata_init_module(void)
